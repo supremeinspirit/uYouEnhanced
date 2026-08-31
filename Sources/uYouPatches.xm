@@ -643,7 +643,6 @@ static void UYTStartShortsDownload(NSString *videoID, id sourceView, NSString *q
         UYTStartShortsDownload(videoID, sourceView, nil, NO);
     }
 }
-%end
 %end // gShortsUYouDownload
 
 // Fix uYou varispeed controller fallback.
