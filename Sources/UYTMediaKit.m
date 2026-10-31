@@ -160,12 +160,19 @@ BOOL UYTFFRun(NSArray<NSString *> *arguments) {
             if (session) {
                 if ([session respondsToSelector:@selector(getReturnCode)]) {
                     id ret = ((id (*)(id, SEL))objc_msgSend)(session, @selector(getReturnCode));
-                    if ([ret respondsToSelector:@selector(isSuccess)]) {
+                    // FFmpegKit's ReturnCode has -isValueSuccess and -getValue (int);
+                    // without this check every finished run counted as failed.
+                    if ([ret respondsToSelector:@selector(isValueSuccess)]) {
+                        ok = ((BOOL (*)(id, SEL))objc_msgSend)(ret, @selector(isValueSuccess));
+                        if ([ret respondsToSelector:@selector(getValue)]) {
+                            rc = (long)((int (*)(id, SEL))objc_msgSend)(ret, @selector(getValue));
+                        }
+                    } else if ([ret respondsToSelector:@selector(isSuccess)]) {
                         ok = ((BOOL (*)(id, SEL))objc_msgSend)(ret, @selector(isSuccess));
                         if ([ret respondsToSelector:@selector(intValue)]) {
                             rc = (long)[ret intValue];
                         } else if ([ret respondsToSelector:@selector(getValue)]) {
-                            rc = (long)[(NSNumber *)ret integerValue];
+                            rc = (long)((int (*)(id, SEL))objc_msgSend)(ret, @selector(getValue));
                         }
                     } else if ([ret respondsToSelector:@selector(intValue)]) {
                         rc = (long)[ret intValue];
